@@ -1,91 +1,67 @@
-# DuMacro Recorder - MOUSE
 from pynput import mouse
-from pynput import keyboard
 import time
+_NAME_ = r'DuMOUSE.py'
+def write(text,mode='a'):
+    f=open(_NAME_,mode);f.write(text);f.close()
+string='''from pynput.mouse import Button, Controller
+import time
+mouse = Controller()\n\n'''
+write(string,mode='w')
 
-x=input('File name:')
-macro = r''+x+'.py'
-f=open(macro,'w')
-f.write('from pynput.mouse import Button, Controller\n')
-f.write('\nimport time\n')
-f.write('\nmouse = Controller()\n')
-f.close()
-press_release_time = []
-release_press_time = []
-VREME = []
-VREME_CLICK = []
+press_release = []
+release_press = []
+_TIME_ = []
+
 def on_move(x, y):
-    if len(VREME) == 1:
-        zap_1 = '\ntime.sleep('+str(time.time()-VREME[0])+')\n'
-        fww=open(macro,'a')
-        fww.write(zap_1) # WRITE
-        fww.close()
-        VREME.clear()
-    txt='\ntime.sleep(1/60)\nmouse.position={0}\n'.format((x, y))
-    fw=open(macro,'a')
-    fw.write(txt) # WRITE
-    fw.close()
+    if len(_TIME_) == 1:
+        write('\ntime.sleep('+str(time.time()-_TIME_[0])+')\n')
+        _TIME_.clear()
+    write('\ntime.sleep(1/60)\nmouse.position={0}\n'.format((x, y)))
+    
 def on_click(x, y, button, pressed):
     position='\nmouse.position={0}\n'.format((x, y))
+    
     if pressed:
-        if len(VREME) == 1:
-            zap_1 = '\ntime.sleep('+str(time.time()-VREME[0])+')\n'
-            fww=open(macro,'a')
-            fww.write(zap_1) # WRITE
-            fww.close()
-            VREME.clear()
-        release_press_time.append(time.time())
-        if len(release_press_time) == 2:
-            num = release_press_time[1]-release_press_time[0]
-            txt_num = '\ntime.sleep('+str(num)+')\n'
-            fw=open(macro,'a')
-            fw.write(txt_num) # WRITE
-            fw.close()
-            del release_press_time[0]
-        f_w=open(macro,'a')
-        f_w.write(position) # WRITE
-        f_w.close() 
+        if len(_TIME_) == 1:
+            write('\ntime.sleep('+str(time.time()-_TIME_[0])+')\n')
+            _TIME_.clear()
+        release_press.append(time.time())
+        if len(release_press) == 2:
+            write('\ntime.sleep('+str(release_press[1]-release_press[0])+')\n')
+            del release_press[0]
+        write(position)
         if button == mouse.Button.left:
-            str_press = '\nmouse.press(Button.right)\n'
-            fw=open(macro,'a')
-            fw.write(str_press) # WRITE
-            fw.close()
+            write('\nmouse.press(Button.right)\n')
         if button == mouse.Button.right:
-            str_press = '\nmouse.press(Button.left)\n'
-            fw=open(macro,'a')
-            fw.write(str_press) # WRITE
-            fw.close()
-        press_release_time.append(time.time())
+            write('\nmouse.press(Button.left)\n')
+        press_release.append(time.time())
         return True
+    
     if not pressed:
-        f_w=open(macro,'a')
-        f_w.write(position) # WRITE
-        f_w.close() 
-        str_release = '\ntime.sleep('+str(time.time() - press_release_time[0])+')\n'
-        f__w=open(macro,'a')
-        f__w.write(str_release) # WRITE
-        f__w.close()
-        
-        if button == mouse.Button.right:
-            fw=open(macro,'a')
-            fw.write('\nmouse.release(Button.right)\n') # WRITE
-            fw.close()
+        write(position)
+        write('\ntime.sleep('+str(time.time() - press_release[0])+')\n')
         if button == mouse.Button.left:
-            fw=open(macro,'a')
-            fw.write('\nmouse.release(Button.left)\n') # WRITE
-            fw.close()
-        
-        press_release_time.clear()
+            write('\nmouse.release(Button.right)\n')
+        if button == mouse.Button.right:
+            write('\nmouse.release(Button.left)\n')
+        press_release.clear()
         return False
+    
+def on_scroll(x, y, dx, dy):
+    txt=str('\nmouse.scroll{0}{1}\ntime.sleep(1/60)\n'.format('' if dy < 0 else '',(x, y)))
+    write(txt)
+    
 def on_release(key):
     if key == keyboard.Key.esc:
         exit()
         return False
-def dc97():
-    with mouse.Listener(
-        on_move=on_move,
-        on_click=on_click) as listener:
+    
+def _mouse_():
+    with mouse.Listener(on_move=on_move,on_click=on_click,on_scroll=on_scroll) as listener:
         listener.join()
-VREME.append(time.time())
-while True:
-    dc97()
+        
+def du_mouse():
+    _TIME_.append(time.time())
+    while True:
+        _mouse_()
+du_mouse()
